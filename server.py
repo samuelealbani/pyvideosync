@@ -10,6 +10,7 @@ loop=True
 frames_directory = './frames'
 tot_frames=0
 index_frame=0
+fps=12
 
 # this manages the connection
 async def handler(websocket):
@@ -25,16 +26,18 @@ async def handler(websocket):
         print(message, message == "hello")
 
 async def periodic_task():
+    global index_frame
+    global loop
+    global fps
     while True:
-        global index_frame
-        global loop
+
         # print("This is called every second")
         print(f"Playing frame {index_frame}")
         if clients:
             # Create tasks from coroutines before passing them to asyncio.wait
             tasks = [asyncio.create_task(client.send(f"{index_frame}")) for client in clients]
             await asyncio.wait(tasks)
-        await asyncio.sleep(1)
+        await asyncio.sleep(1/fps)
         if loop:
             if index_frame >= tot_frames-1:
                 index_frame = 0
