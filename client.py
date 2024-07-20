@@ -5,7 +5,7 @@ import asyncio
 import glob
 import websockets
 
-server_uri = "ws://localhost:8001"
+server_uri = "ws://192.168.1.11:8001"
 
 frames_directory = './frames'
 frame_files = []
