@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-
 import asyncio
-import os
 import glob
+import os
+import cv2  # Import OpenCV
 import websockets
 
 clients = []  # List to keep track of connected clients
@@ -30,18 +30,19 @@ async def periodic_task():
     global loop
     global fps
     while True:
-
         # print("This is called every second")
-        print(f"Playing frame {index_frame}")
+        # print(f"Playing frame {index_frame}")
         if clients:
             # Create tasks from coroutines before passing them to asyncio.wait
-            tasks = [asyncio.create_task(client.send(f"{index_frame}")) for client in clients]
-            await asyncio.wait(tasks)
+            if index_frame==0:
+                tasks = [asyncio.create_task(client.send(f"{index_frame}")) for client in clients]
+                await asyncio.wait(tasks)
         await asyncio.sleep(1/fps)
+        index_frame += 1
         if loop:
             if index_frame >= tot_frames-1:
                 index_frame = 0
-        index_frame += 1
+        
 
 def setup(directory_path):
     global tot_frames
