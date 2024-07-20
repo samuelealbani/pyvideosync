@@ -8,10 +8,12 @@ import time
 
 clients = []  # List to keep track of connected clients
 loop=True
-frames_directory = './frames'
+frames_directory = '/Users/samuele/Desktop/frames'
+#'./frames'
 tot_frames=0
 index_frame=0
 fps=25
+sync_interval=100
 
 # this manages the connection
 async def handler(websocket):
@@ -53,7 +55,9 @@ async def periodic_task():
     while True:
         start_time = time.time()  # Start time of the loop iteration
 
-        if clients and index_frame == 0:
+        # check every sync_interval frames if there are clients connected
+        # if clients and index_frame == 0:
+        if clients and index_frame % sync_interval == 0:
             # Send the frame index to all clients at the beginning of the sequence
             tasks = [asyncio.create_task(client.send(f"{index_frame}")) for client in clients]
             await asyncio.wait(tasks)
@@ -65,7 +69,7 @@ async def periodic_task():
         await asyncio.sleep(sleep_time)  # Sleep for the calculated duration
 
         index_frame += 1
-        if loop and index_frame >= tot_frames - 1:
+        if loop and index_frame == tot_frames - 1:
             index_frame = 0
 
         # Calculate and print the actual fps for debugging purposes

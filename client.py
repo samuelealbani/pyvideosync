@@ -8,7 +8,7 @@ import time
 
 server_uri = "ws://192.168.1.11:8001"
 
-frames_directory = './frames'
+frames_directory = '/Users/samuele/Desktop/frames'
 frame_files = []
 tot_frames=0
 index_frame=0
@@ -48,7 +48,7 @@ async def periodic_task():
         await asyncio.sleep(sleep_time)  # Sleep for the calculated duration
 
         index_frame += 1
-        if loop and index_frame >= tot_frames - 1:
+        if loop and index_frame == tot_frames - 1:
             index_frame = 0
 
         # Optional: Calculate and print the actual fps for debugging purposes
@@ -90,6 +90,7 @@ def setup(directory_path):
     # Sort the frame files, assuming filenames have numbers indicating order
     frame_files.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
     tot_frames=len(frame_files)
+    print(f"Total frames: {tot_frames}")
 
 async def main():
     global server_uri
