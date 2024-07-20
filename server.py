@@ -4,13 +4,14 @@ import glob
 import os
 import cv2  # Import OpenCV
 import websockets
+import time
 
 clients = []  # List to keep track of connected clients
 loop=True
 frames_directory = './frames'
 tot_frames=0
 index_frame=0
-fps=12
+fps=25
 
 # this manages the connection
 async def handler(websocket):
@@ -25,24 +26,51 @@ async def handler(websocket):
             print(f"New client connected. Currently {len(clients)} clients connected.")
         print(message, message == "hello")
 
+# async def periodic_task():
+#     global index_frame
+#     global loop
+#     global fps
+#     while True:
+#         # print("This is called every second")
+#         # print(f"Playing frame {index_frame}")
+#         if clients:
+#             # Create tasks from coroutines before passing them to asyncio.wait
+#             if index_frame==0:
+#                 tasks = [asyncio.create_task(client.send(f"{index_frame}")) for client in clients]
+#                 await asyncio.wait(tasks)
+#         await asyncio.sleep(1/fps)
+#         index_frame += 1
+#         if loop:
+#             if index_frame >= tot_frames-1:
+#                 index_frame = 0
+        
 async def periodic_task():
     global index_frame
     global loop
     global fps
+    next_frame_time = time.time()  # Initialize the next frame time
+
     while True:
-        # print("This is called every second")
-        # print(f"Playing frame {index_frame}")
-        if clients:
-            # Create tasks from coroutines before passing them to asyncio.wait
-            if index_frame==0:
-                tasks = [asyncio.create_task(client.send(f"{index_frame}")) for client in clients]
-                await asyncio.wait(tasks)
-        await asyncio.sleep(1/fps)
+        start_time = time.time()  # Start time of the loop iteration
+
+        if clients and index_frame == 0:
+            # Send the frame index to all clients at the beginning of the sequence
+            tasks = [asyncio.create_task(client.send(f"{index_frame}")) for client in clients]
+            await asyncio.wait(tasks)
+
+        # Calculate the time to wait until the next frame
+        next_frame_time += 1.0 / fps
+        sleep_time = max(0, next_frame_time - time.time())
+
+        await asyncio.sleep(sleep_time)  # Sleep for the calculated duration
+
         index_frame += 1
-        if loop:
-            if index_frame >= tot_frames-1:
-                index_frame = 0
-        
+        if loop and index_frame >= tot_frames - 1:
+            index_frame = 0
+
+        # Calculate and print the actual fps for debugging purposes
+        actual_fps = 1.0 / (time.time() - start_time)
+        print(f"Actual FPS: {actual_fps:.2f}")
 
 def setup(directory_path):
     global tot_frames

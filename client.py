@@ -4,6 +4,7 @@ import os
 import asyncio
 import glob
 import websockets
+import time
 
 server_uri = "ws://192.168.1.11:8001"
 
@@ -12,21 +13,47 @@ frame_files = []
 tot_frames=0
 index_frame=0
 loop=True
-fps=12
+fps=25
 
+# async def periodic_task():
+#     global index_frame
+#     global tot_frames
+#     global loop
+#     global fps
+#     while True:
+#         await display_frame(int(index_frame))
+#         await asyncio.sleep(1/fps)
+#         index_frame += 1
+#         if loop:
+#             if index_frame >= tot_frames-1:
+#                 index_frame = 0
+ 
 async def periodic_task():
     global index_frame
     global tot_frames
     global loop
     global fps
+
+    next_frame_time = time.time()  # Initialize the next frame time
+
     while True:
+        start_time = time.time()  # Start time of the loop iteration
+
         await display_frame(int(index_frame))
-        await asyncio.sleep(1/fps)
+
+        # Calculate the time to wait until the next frame
+        next_frame_time += 1.0 / fps
+        sleep_time = max(0, next_frame_time - time.time())
+
+        await asyncio.sleep(sleep_time)  # Sleep for the calculated duration
+
         index_frame += 1
-        if loop:
-            if index_frame >= tot_frames-1:
-                index_frame = 0
-       
+        if loop and index_frame >= tot_frames - 1:
+            index_frame = 0
+
+        # Optional: Calculate and print the actual fps for debugging purposes
+        actual_fps = 1.0 / (time.time() - start_time)
+        print(f"Actual FPS: {actual_fps:.2f}")      
 
 async def display_frame(_index):
     global frame_files
