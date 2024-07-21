@@ -12,7 +12,7 @@ frames_directory = '/Volumes/Extreme SSD/Hydromancy PROJECT/Premiere/MessaInOnda
 #'./frames'
 tot_frames=0
 index_frame=0
-fps=25
+fps=12
 sync_interval=100
 verbose=True
 
