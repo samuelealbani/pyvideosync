@@ -1,2 +1,7 @@
 frames/
 .venv/
+client copy.py
+.DS_Store
+master copy 2.py
+slave copy.py
+test_websocket/app.py
