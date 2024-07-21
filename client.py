@@ -57,14 +57,21 @@ async def periodic_task():
 
 async def display_frame(_index):
     global frame_files
+
+    cv2.namedWindow('Frame', cv2.WND_PROP_FULLSCREEN)
+    cv2.setWindowProperty('Frame',cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
+
     frame = cv2.imread(frame_files[_index])
     # frame_path = os.path.join(frames_directory, f"frame{_index}.jpg")
     # frame = cv2.imread(frame_path)
     if frame is not None:
         cv2.imshow('Frame', frame)
-        cv2.waitKey(1)  # Display the frame for 1 ms
+        if cv2.waitKey(1) & 0xFF == 27:  # 27 is the ASCII value for the ESC key
+            cv2.destroyAllWindows()  # Close the OpenCV window
+            os._exit(0)  # Exit the program immediately
     else:
         print(f"Frame {_index} not found.")
+
 
 async def send_hello_and_listen(uri):
     global index_frame
