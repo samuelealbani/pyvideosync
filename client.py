@@ -8,12 +8,13 @@ import time
 
 server_uri = "ws://192.168.1.11:8001"
 
-frames_directory = '/Users/samuele/Desktop/frames'
+frames_directory = '/Volumes/Extreme SSD/Hydromancy PROJECT/Premiere/MessaInOnda/render/Montaggione-1/Input'
 frame_files = []
 tot_frames=0
 index_frame=0
 loop=True
 fps=25
+verbose=False
 
 # async def periodic_task():
 #     global index_frame
@@ -53,7 +54,9 @@ async def periodic_task():
 
         # Optional: Calculate and print the actual fps for debugging purposes
         actual_fps = 1.0 / (time.time() - start_time)
-        print(f"Actual FPS: {actual_fps:.2f}")      
+
+        if verbose:
+            print(f"frame{index_frame} - Actual FPS: {actual_fps:.2f}")   
 
 async def display_frame(_index):
     global frame_files
@@ -75,6 +78,7 @@ async def display_frame(_index):
 
 async def send_hello_and_listen(uri):
     global index_frame
+    global tot_frames
     async with websockets.connect(uri) as websocket:
         await websocket.send("hello")
         print("Message 'hello' sent to the server.")
@@ -83,10 +87,11 @@ async def send_hello_and_listen(uri):
             message = await websocket.recv()
             print(f"Message from server: {message}")
             # Check if the message is an integer and less than the total number of frames
-            if message.isdigit() and int(message) <= len(frame_files) and int(message) != index_frame:
+            if message.isdigit() and int(message) < tot_frames: # and int(message) != index_frame:
+                print(f"Alignement received: {message}; Playing frame {index_frame}")
                 index_frame = int(message)
             else:
-                print(f"Invalid message: {message}")
+                print(f"Invalid message: {message}\n message.isdigit(): {message.isdigit()} and int(message): {message.isdigit()} < tot_frames: {tot_frames} -> {int(message) < tot_frames}")
 
 def setup(directory_path):
     global tot_frames

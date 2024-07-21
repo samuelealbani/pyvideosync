@@ -8,12 +8,13 @@ import time
 
 clients = []  # List to keep track of connected clients
 loop=True
-frames_directory = '/Users/samuele/Desktop/frames'
+frames_directory = '/Volumes/Extreme SSD/Hydromancy PROJECT/Premiere/MessaInOnda/render/Montaggione-1/Input'
 #'./frames'
 tot_frames=0
 index_frame=0
 fps=25
 sync_interval=100
+verbose=True
 
 # this manages the connection
 async def handler(websocket):
@@ -74,7 +75,8 @@ async def periodic_task():
 
         # Calculate and print the actual fps for debugging purposes
         actual_fps = 1.0 / (time.time() - start_time)
-        print(f"Actual FPS: {actual_fps:.2f}")
+        if verbose:
+            print(f"frame{index_frame} - Actual FPS: {actual_fps:.2f}")
 
 def setup(directory_path):
     global tot_frames
