@@ -70,8 +70,8 @@ async def display_frame(_index):
     # frame = cv2.imread(frame_path)
     if frame is not None:
         cv2.imshow('Frame', frame)
-        cv2.waitKey(1)  # Display the frame for 1 ms
-        if 0xFF == 27:  # 27 is the ASCII value for the ESC key
+          # Display the frame for 1 ms
+        if cv2.waitKey(1) & 0xFF == 27:  # 27 is the ASCII value for the ESC key
             cv2.destroyAllWindows()  # Close the OpenCV window
             os._exit(0)  # Exit the program immediately
     else:
