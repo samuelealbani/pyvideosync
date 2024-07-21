@@ -83,18 +83,23 @@ async def send_hello_and_listen(uri):
     global index_frame
     global tot_frames
     async with websockets.connect(uri) as websocket:
-        await websocket.send("hello")
-        print("Message 'hello' sent to the server.")
-        # Continue to await and print messages from the server
-        while True:
-            message = await websocket.recv()
-            print(f"Message from server: {message}")
-            # Check if the message is an integer and less than the total number of frames
-            if message.isdigit() and int(message) < tot_frames: # and int(message) != index_frame:
-                print(f"Alignement received: {message}; Playing frame {index_frame}")
-                index_frame = int(message)
-            else:
-                print(f"Invalid message: {message}\n message.isdigit(): {message.isdigit()} and int(message): {message.isdigit()} < tot_frames: {tot_frames} -> {int(message) < tot_frames}")
+        try:
+            await websocket.send("hello")
+            print("Message 'hello' sent to the server.")
+            # Continue to await and print messages from the server
+            while True:
+                message = await websocket.recv()
+                print(f"Message from server: {message}")
+                # Check if the message is an integer and less than the total number of frames
+                if message.isdigit() and int(message) < tot_frames: # and int(message) != index_frame:
+                    print(f"Alignement received: {message}; Playing frame {index_frame}")
+                    index_frame = int(message)
+                else:
+                    print(f"Invalid message: {message}\n message.isdigit(): {message.isdigit()} and int(message): {message.isdigit()} < tot_frames: {tot_frames} -> {int(message) < tot_frames}")
+        except websockets.exceptions.ConnectionClosed:
+            print("Connection with server closed. Continuing to play frames...")
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
 def setup(directory_path):
     global tot_frames
