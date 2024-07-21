@@ -15,7 +15,10 @@ index_frame=0
 loop=True
 fps=25
 verbose=True
-fullscreen=False
+fullscreen=True
+resize=True
+resize_width=1920
+resize_height=1080
 
 # async def periodic_task():
 #     global index_frame
@@ -61,6 +64,11 @@ async def periodic_task():
 
 async def display_frame(_index):
     global frame_files
+    global fullscreen
+    global resize   
+    global resize_width
+    global resize_height
+    
     if fullscreen:
         cv2.namedWindow('Frame', cv2.WND_PROP_FULLSCREEN)
         cv2.setWindowProperty('Frame',cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
@@ -69,6 +77,8 @@ async def display_frame(_index):
     # frame_path = os.path.join(frames_directory, f"frame{_index}.jpg")
     # frame = cv2.imread(frame_path)
     if frame is not None:
+        if resize:
+            frame = cv2.resize(frame, (resize_width, resize_height))
         cv2.imshow('Frame', frame)
           # Display the frame for 1 ms
         if cv2.waitKey(1) & 0xFF == 27:  # 27 is the ASCII value for the ESC key
