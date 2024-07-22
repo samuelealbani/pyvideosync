@@ -6,17 +6,17 @@ import glob
 import websockets
 import time
 
-server_uri = "ws://192.168.1.11:8001"
-
-frames_directory = '/Volumes/Extreme SSD/Hydromancy PROJECT/Premiere/MessaInOnda/render/Montaggione-1/Input_100'
+server_uri = "ws://192.168.1.82:8001"
+# frames_directory = '/Volumes/Extreme SSD/Hydromancy PROJECT/Premiere/MessaInOnda/render/Montaggione-1/Input_100'
+frames_directory = '/media/pi/BIENCA/GAN_50'
 frame_files = []
 tot_frames=0
 index_frame=0
 loop=True
-fps=25
-verbose=True
+fps=18
+verbose=False
 fullscreen=True
-resize=True
+resize=False
 resize_width=1920
 resize_height=1080
 

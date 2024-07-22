@@ -8,11 +8,11 @@ import time
 
 clients = []  # List to keep track of connected clients
 loop=True
-frames_directory = '/Volumes/Extreme SSD/Hydromancy PROJECT/Premiere/MessaInOnda/render/Montaggione-1/Input_1280-720'
-#'./frames'
+frames_directory = '/media/pi/BIENCA/GAN_50'
+'/Volumes/Extreme SSD/Hydromancy PROJECT/Premiere/MessaInOnda/render/Montaggione-1/Input_100'
 tot_frames=0
 index_frame=0
-fps=25
+fps=18
 sync_interval=100
 verbose=True
 
