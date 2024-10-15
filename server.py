@@ -5,99 +5,103 @@ import os
 import cv2  # Import OpenCV
 import websockets
 import time
+from gpiozero import Button
+from typing import List
 
+# Constants
+SERVER_URI = "ws://192.168.100.82:8001"
+FRAMES_DIRECTORY = '/media/pi/Piccilla/Input_1280-720'
+FPS = 18
+SYNC_INTERVAL = 100
+VERBOSE = True
+BUTTON_PIN = 2
+
+# Global Variables
+frame_files: List[str] = []
+tot_frames = 0
+index_frame = 0
+is_playing = True
+prev_playing_status = True
 clients = []  # List to keep track of connected clients
-loop=True
-frames_directory = '/media/pi/BIENCA/GAN_50'
-'/Volumes/Extreme SSD/Hydromancy PROJECT/Premiere/MessaInOnda/render/Montaggione-1/Input_100'
-tot_frames=0
-index_frame=0
-fps=18
-sync_interval=100
-verbose=True
+loop = True
 
-# this manages the connection
+button = Button(BUTTON_PIN)
+
+def start_stop():
+    global is_playing
+    is_playing = not is_playing
+    print('Pressed button, is_playing is', is_playing)
+    time.sleep(0.5)
+
+def str_to_bool(s: str) -> bool:
+    if s == "True":
+        return True
+    elif s == "False":
+        return False
+    else:
+        raise ValueError("Input string must be 'True' or 'False'")
+
 async def handler(websocket):
-    while True:
-        try:
+    global clients
+    clients.append(websocket)
+    print(f"New client connected. Currently {len(clients)} clients connected.")
+    try:
+        while True:
             message = await websocket.recv()
-        except websockets.ConnectionClosedOK:
-            break
-        print(f"Received message: {message}")
-        if message == "hello":
-            clients.append(websocket)
-            print(f"New client connected. Currently {len(clients)} clients connected.")
-        print(message, message == "hello")
+            print(f"Received message: {message}")
+            if message == "hello":
+                print(f"Client said hello. Currently {len(clients)} clients connected.")
+    except websockets.ConnectionClosedOK:
+        print("Client disconnected.")
+    finally:
+        clients.remove(websocket)
+        print(f"Client removed. Currently {len(clients)} clients connected.")
 
-# async def periodic_task():
-#     global index_frame
-#     global loop
-#     global fps
-#     while True:
-#         # print("This is called every second")
-#         # print(f"Playing frame {index_frame}")
-#         if clients:
-#             # Create tasks from coroutines before passing them to asyncio.wait
-#             if index_frame==0:
-#                 tasks = [asyncio.create_task(client.send(f"{index_frame}")) for client in clients]
-#                 await asyncio.wait(tasks)
-#         await asyncio.sleep(1/fps)
-#         index_frame += 1
-#         if loop:
-#             if index_frame >= tot_frames-1:
-#                 index_frame = 0
-        
 async def periodic_task():
-    global index_frame
-    global loop
-    global fps
+    global index_frame, loop, FPS, is_playing, prev_playing_status
+
     next_frame_time = time.time()  # Initialize the next frame time
 
     while True:
-        start_time = time.time()  # Start time of the loop iteration
+        button.when_pressed = start_stop
 
-        # check every sync_interval frames if there are clients connected
-        # if clients and index_frame == 0:
-        if clients and index_frame % sync_interval == 0:
-            # Send the frame index to all clients at the beginning of the sequence
-            tasks = [asyncio.create_task(client.send(f"{index_frame}")) for client in clients]
-            await asyncio.wait(tasks)
+        if is_playing != prev_playing_status:
+            print('is_playing != prev_playing_status', is_playing)
+            if clients:
+                tasks = [asyncio.create_task(client.send(f"{is_playing}")) for client in clients]
+                await asyncio.wait(tasks)
+            prev_playing_status = is_playing
 
-        # Calculate the time to wait until the next frame
-        next_frame_time += 1.0 / fps
-        sleep_time = max(0, next_frame_time - time.time())
+        if is_playing:
+            start_time = time.time()  # Start time of the loop iteration
 
-        await asyncio.sleep(sleep_time)  # Sleep for the calculated duration
+            if clients and index_frame % SYNC_INTERVAL == 0:
+                tasks = [asyncio.create_task(client.send(f"{index_frame}")) for client in clients]
+                await asyncio.wait(tasks)
 
-        index_frame += 1
-        if loop and index_frame == tot_frames - 1:
-            index_frame = 0
+            next_frame_time += 1.0 / FPS
+            sleep_time = max(0, next_frame_time - time.time())
+            await asyncio.sleep(sleep_time)  # Sleep for the calculated duration
 
-        # Calculate and print the actual fps for debugging purposes
-        actual_fps = 1.0 / (time.time() - start_time)
-        if verbose:
-            print(f"frame{index_frame} - Actual FPS: {actual_fps:.2f}")
+            index_frame += 1
+            if loop and index_frame == tot_frames - 1:
+                index_frame = 0
 
-def setup(directory_path):
-    global tot_frames
-    # List all jpg files in the directory
+            actual_fps = 1.0 / (time.time() - start_time)
+            if VERBOSE:
+                print(f"frame{index_frame} - Actual FPS: {actual_fps:.2f}")
+
+def setup(directory_path: str):
+    global tot_frames, frame_files
     frame_files = glob.glob(os.path.join(directory_path, '*.jpg'))
-    tot_frames=len(frame_files)
+    tot_frames = len(frame_files)
     print(f"Found {tot_frames} frames in the directory.")
 
-
 async def main():
-
-    setup(frames_directory)
-
+    setup(FRAMES_DIRECTORY)
     print("Server starting...")
-    # async with websockets.serve(handler, "", 8001):
-    #     await asyncio.Future()  # run forever
     server = websockets.serve(handler, "", 8001)
-    task = periodic_task()
-    await asyncio.gather(server, task)
-
-
+    await asyncio.gather(server, periodic_task())
 
 if __name__ == "__main__":
     asyncio.run(main())
