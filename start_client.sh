@@ -1,13 +1,14 @@
 #!/usr/bin/bash
 
-# cd to the directory where the server is located
-cd  /home/pi/Desktop/pyvideosync
+# Path to the virtual environment
+VENV_PATH="/home/pi/Desktop/pyvideosync/.venv"
 
-source ./venv/bin/activate
+# Path to the Python program
+CLIENT_PROGRAM="/home/pi/Desktop/pyvideosync/client.py"
 
-# Start the server
-echo "Starting the client (in 20 seconds)..."
- #sleep 20
+# Open a new terminal window and run the commands
 
-# Start the server
-python3 client.py &
+sleep 15
+
+export DISPLAY=:0
+lxterminal --command="bash -c 'source $VENV_PATH/bin/activate && python3 $CLIENT_PROGRAM; exec bash'" &
